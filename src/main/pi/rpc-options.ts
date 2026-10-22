@@ -120,7 +120,6 @@ export async function applyPiRpcSessionOption(
   proof?.writes.set(key, token)
   proof?.current.delete(key)
   if (key === 'model') {
-    proof?.writes.set('effort', token)
     proof?.current.delete('effort')
   }
   await waitForPromiseWithSignal(

@@ -200,6 +200,22 @@ describe('Pi RPC session ownership and delivery', () => {
     expect(h.connection.sent).toMatchObject([{ type: 'prompt', message: 'chosen' }])
   })
 
+  it("uses Pi's model-selected effort when a message only chooses a different model", async () => {
+    const h = await setup()
+    const result = await h.adapter.dispatch({
+      sessionId,
+      fence: 7,
+      clientMessageId: 'model-only-send',
+      body: { kind: 'message', role: 'user', blocks: [{ type: 'text', text: 'chosen' }] },
+      executionOptions: { model: 'anthropic/model-2' }
+    })
+    expect(result).toEqual({ state: 'admitted' })
+    expect(h.connection.requests.filter((command) => command.startsWith('set_'))).toEqual([
+      'set_model'
+    ])
+    expect(h.connection.sent).toMatchObject([{ type: 'prompt', message: 'chosen' }])
+  })
+
   it('rejects a known-unsent prompt when an option times out and preserves Stop reason', async () => {
     const h = await setup()
     const timeout = new Error('Pi did not answer set_model')
