@@ -28,14 +28,11 @@ export async function resolveGhAccountRequiredHost(
   resolveAlias: SshAliasHostnameResolver = resolveSshConfigHostname
 ): Promise<string | undefined> {
   const host = githubHostFromIdentityKey(repo.gitRemoteIdentity?.canonicalKey)
-  // Why: only SSH transport reads ~/.ssh/config; a dotless HTTPS host is literal.
   const remoteUrl = repo.gitRemoteIdentity?.remoteUrl ?? ''
-  if (!host || !isUnresolvedSshHostAlias(host) || !remoteUrlUsesSshTransport(remoteUrl)) {
+  // Why: OpenSSH aliases can contain dots, so every SSH host must be resolved through its config.
+  if (!host || !remoteUrlUsesSshTransport(remoteUrl)) {
     return host
   }
-  // Why: `git@github-personal:owner/repo` keeps the OpenSSH alias in the identity key.
-  // No gh login is named after that alias, so filtering to it empties the dropdown.
-  // Resolve in the runtime that runs gh (WSL distro vs host) so both see the same ssh config.
   const context: SshConfigResolutionContext = {
     repoPath: repo.path,
     connectionId: repo.connectionId ?? null,
