@@ -26,6 +26,13 @@ describe('resolveGhAccountRequiredHost', () => {
     expect(resolveAlias).toHaveBeenCalledWith('github.com', expect.anything())
   })
 
+  it('keeps a direct github.com filter when a connection cannot resolve SSH config', async () => {
+    const repo = { ...repoFor('git@github.com:example/sample-app.git'), connectionId: 'remote-1' }
+    await expect(
+      resolveGhAccountRequiredHost(repo, {}, async () => ({ hostname: null }))
+    ).resolves.toBe('github.com')
+  })
+
   it('keeps a real enterprise host when SSH resolves it to itself', async () => {
     const resolveAlias = vi.fn(async () => ({ hostname: 'ghe.example.com' }))
     await expect(

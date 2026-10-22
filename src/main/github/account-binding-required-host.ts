@@ -43,6 +43,10 @@ export async function resolveGhAccountRequiredHost(
   const resolved = await resolveAlias(alias, context).catch(() => null)
   const hostname = resolved?.hostname?.trim().toLowerCase()
   if (!hostname || isUnresolvedSshHostAlias(hostname)) {
+    // Why: remote connections cannot read SSH config, but a direct github.com host is authoritative.
+    if (host === 'github.com' && alias.toLowerCase() === 'github.com') {
+      return 'github.com'
+    }
     return undefined
   }
   // Why: only github.com's SSH/www aliases fold; gh keys an Enterprise login by its exact host.
